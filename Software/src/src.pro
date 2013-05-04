@@ -188,7 +188,8 @@ HEADERS += \
 
 FORMS += SettingsWindow.ui \
     GrabWidget.ui \
-    GrabConfigWidget.ui
+    GrabConfigWidget.ui \
+    ../SettingsWizard.ui
 
 #
 #   QSerialDevice
@@ -214,4 +215,7 @@ include(hotkeys/qkeysequencewidget/qkeysequencewidget.pri)
 #include (../PythonQt/build/common.prf )
 include (../PythonQt/build/PythonQt.prf )
 include (../PythonQt/build/PythonQt_QtAll.prf )
+
+OTHER_FILES += \
+    test.qml
 

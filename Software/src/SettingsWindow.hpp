@@ -212,7 +212,6 @@ private:
     void updateDeviceTabWidgetsVisibility();
     void setDeviceTabWidgetsVisibility(DeviceTab::Options options);
     void syncLedDeviceWithSettingsWindow();
-    MaximumNumberOfLeds::Devices getLightpackMaximumNumberOfLeds();
     int getLigtpackFirmwareVersionMajor();
 
 
