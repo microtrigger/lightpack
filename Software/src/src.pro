@@ -215,7 +215,3 @@ include(hotkeys/qkeysequencewidget/qkeysequencewidget.pri)
 #include (../PythonQt/build/common.prf )
 include (../PythonQt/build/PythonQt.prf )
 include (../PythonQt/build/PythonQt_QtAll.prf )
-
-OTHER_FILES += \
-    test.qml
-
