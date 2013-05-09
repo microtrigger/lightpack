@@ -32,6 +32,7 @@
 #include <QtDebug>
 #include "debug.h"
 #include "Settings.hpp"
+#include "usb.h"
 
 using namespace SettingsScope;
 

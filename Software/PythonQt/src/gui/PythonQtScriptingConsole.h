@@ -44,7 +44,7 @@
 
 #include "PythonQt.h"
 #include <QVariant>
-#include <QTextEdit>
+#include <QtWidgets/QTextEdit>
 
 class QCompleter;
 

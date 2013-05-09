@@ -11,6 +11,8 @@ DESTDIR     = bin
 TEMPLATE    = app
 QT         += network
 
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
 # QMake and GCC produce a lot of stuff
 OBJECTS_DIR = stuff
 MOC_DIR     = stuff
@@ -44,7 +46,7 @@ include(../build-config.prf)
 
 unix:!macx{
     CONFIG    += link_pkgconfig
-    PKGCONFIG += libusb-1.0
+    PKGCONFIG += libusb
 }
 
 win32 {
@@ -74,9 +76,9 @@ win32 {
                 cp -f \"$${MINGW_RUNTIME_DIR}/mingwm10.dll\" ./ && \
                 cp -f \"$${MINGW_RUNTIME_DIR}/libgcc_s_dw2-1.dll\" ./ && \
                 cp -f \"$${MINGW_RUNTIME_DIR}/libstdc++-6.dll\" ./ && \
-                cp -f \"$$PWD/../PythonQt/lib/PythonQt$${DEBUG_EXT}.dll\" ./ && \
-                cp -f \"$$PWD/../PythonQt/lib/PythonQt_QtAll$${DEBUG_EXT}.dll\" ./ && \
-                cp -f \"$$PWD\"/../python_binaries_win32/* ./
+              #  cp -f \"$$PWD/../PythonQt/lib/PythonQt$${DEBUG_EXT}.dll\" ./ && \
+              #  cp -f \"$$PWD/../PythonQt/lib/PythonQt_QtAll$${DEBUG_EXT}.dll\" ./ && \
+              #  cp -f \"$$PWD\"/../python_binaries_win32/* ./
 }
 
 unix:!macx{
@@ -122,9 +124,7 @@ SOURCES += \
     ApiServerSetColorTask.cpp \
     LightpackMath.cpp \
     MoodLampManager.cpp \
-    PluginManager.cpp \
     LedDeviceManager.cpp \
-    plugins/PyPlugin.cpp \
     SelectWidget.cpp \
     grab/D3D10Grabber/D3D10Grabber.cpp \
     grab/GrabberBase.cpp \
@@ -135,7 +135,6 @@ SOURCES += \
     grab/QtGrabberEachWidget.cpp \
     grab/WinAPIGrabberEachWidget.cpp \
     grab/D3D9Grabber.cpp \
-    grab/MacOSGrabber.cpp \
     GrabManager.cpp \
     AbstractLedDevice.cpp
 
@@ -167,8 +166,7 @@ HEADERS += \
     ../../CommonHeaders/COMMANDS.h \
     ../../CommonHeaders/USB_ID.h \
     LightpackMath.hpp \
-    PluginManager.hpp \
-    plugins/PyPlugin.h \    
+#    plugins/PyPlugin.h \
     MoodLampManager.hpp \
     LedDeviceManager.hpp \
     SelectWidget.hpp \
@@ -206,12 +204,12 @@ include(qtsingleapplication/src/qtsingleapplication.pri)
 #
 # Hotkeys based on PSI and QKeySequenceWidget
 #
-include(hotkeys/globalshortcut/globalshortcut.pri)
-include(hotkeys/qkeysequencewidget/qkeysequencewidget.pri)
+#include(hotkeys/globalshortcut/globalshortcut.pri)
+#include(hotkeys/qkeysequencewidget/qkeysequencewidget.pri)
 
 #
 # PythonQt
 #
-#include (../PythonQt/build/common.prf )
-include (../PythonQt/build/PythonQt.prf )
-include (../PythonQt/build/PythonQt_QtAll.prf )
+##include (../PythonQt/build/common.prf )
+#include (../PythonQt/build/PythonQt.prf )
+#include (../PythonQt/build/PythonQt_QtAll.prf )

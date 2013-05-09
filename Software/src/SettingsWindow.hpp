@@ -27,7 +27,10 @@
 
 #pragma once
 
-#include <QtGui>
+#include <QtWidgets/QMainWindow>
+#include <QtWidgets/QSystemTrayIcon>
+#include <QtWidgets/QListWidgetItem>
+#include <QLabel>
 #include "Settings.hpp"
 #include "GrabManager.hpp"
 #include "MoodLampManager.hpp"
@@ -36,7 +39,7 @@
 #include "enums.hpp"
 
 
-#include "hotkeys/qkeysequencewidget/src/qkeysequencewidget.h"
+//#include "hotkeys/qkeysequencewidget/src/qkeysequencewidget.h"
 
 namespace Ui {
     class SettingsWindow;
@@ -103,8 +106,6 @@ public slots:
     void onApiServer_ErrorOnStartListening(QString errorMessage);
     void onPingDeviceEverySecond_Toggled(bool state);
     void processMessage(const QString &message);
-
-    void updatePlugin(QList<PyPlugin*> plugins);
 
     void onFocus();
     void onBlur();
@@ -185,24 +186,11 @@ private slots:
     void onSetApiPort_Clicked();
     void onLoggingLevel_valueChanged(int value);
 
-    void pluginSwitch(int index);
-    void viewPluginConsole();
-
-    void on_list_Plugins_itemClicked(QListWidgetItem*);
-    void on_pushButton_ReloadPlugins_clicked();
-    void MoveUpPlugin();
-    void MoveDownPlugin();
-
     void on_pushButton_LightpackSmoothnessHelp_clicked();
     void on_pushButton_LightpackColorDepthHelp_clicked();
     void on_pushButton_LightpackRefreshDelayHelp_clicked();
 
     void on_pushButton_GammaCorrectionHelp_clicked();
-    void on_tableWidget_Hotkeys_itemSelectionChanged();
-    void onKeySequenceChanged(const QKeySequence &sequence);
-    void onHotkeyChanged(const QString &actionName, const QKeySequence &sequence, const QKeySequence &oldKeySequence);
-
-    void on_pushButton_AllPluginsHelp_clicked();
 
     void on_pushButton_lumosityThresholdHelp_clicked();
 
@@ -291,7 +279,7 @@ private:
     static const unsigned GrabModeIndex;
     static const unsigned MoodLampModeIndex;
 
-    QKeySequenceWidget *m_keySequenceWidget;
+//    QKeySequenceWidget *m_keySequenceWidget;
 
     QString fimwareVersion;
 

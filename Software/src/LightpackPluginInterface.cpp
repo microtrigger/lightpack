@@ -1,11 +1,11 @@
-#include <QtGui>
+#include <QApplication>
 #include "LightpackPluginInterface.hpp"
 
 #include "Settings.hpp"
 #include "version.h"
 #include "debug.h"
 
-#include <plugins/PyPlugin.h>
+//#include <plugins/PyPlugin.h>
 
 using namespace SettingsScope;
 
@@ -133,20 +133,20 @@ QString LightpackPluginInterface::Version()
 PyPlugin* LightpackPluginInterface::findName(QString name)
 {
     DEBUG_LOW_LEVEL << Q_FUNC_INFO << name;
-    foreach(PyPlugin* plugin, _plugins){
-        if (plugin->getName() == name)
-            return plugin;
-    }
+//    foreach(PyPlugin* plugin, _plugins){
+//        if (plugin->getName() == name)
+//            return plugin;
+//    }
 
     return NULL;
 }
 
 PyPlugin* LightpackPluginInterface::findSessionKey(QString sessionKey)
 {
-    foreach(PyPlugin* plugin, _plugins){
-        if (plugin->getSessionKey() == sessionKey)
-            return plugin;
-    }
+//    foreach(PyPlugin* plugin, _plugins){
+//        if (plugin->getSessionKey() == sessionKey)
+//            return plugin;
+//    }
 
     return NULL;
 }
@@ -155,10 +155,10 @@ PyPlugin* LightpackPluginInterface::findSessionKey(QString sessionKey)
 // TODO identification plugin locked
 QString LightpackPluginInterface::GetSessionKey(QString module)
 {
-    if (module=="API") return "Lock";
-    PyPlugin* plugin = findName(module);
-    if (plugin == NULL) return "";
-    return plugin->getSessionKey();
+    return "Lock";
+//    PyPlugin* plugin = findName(module);
+//    if (plugin == NULL) return "";
+//    return plugin->getSessionKey();
 }
 
 int LightpackPluginInterface::CheckLock(QString sessionKey)
@@ -195,8 +195,8 @@ bool LightpackPluginInterface::Lock(QString sessionKey)
                          PyPlugin* pluginLock = findSessionKey(key);
                          if (pluginLock == NULL) return false;
                          DEBUG_LOW_LEVEL << Q_FUNC_INFO << lockSessionKeys.indexOf(key);
-                         if (plugin->getPriority() > pluginLock->getPriority())
-                             lockSessionKeys.insert(lockSessionKeys.indexOf(key),sessionKey);
+//                         if (plugin->getPriority() > pluginLock->getPriority())
+//                             lockSessionKeys.insert(lockSessionKeys.indexOf(key),sessionKey);
                          DEBUG_LOW_LEVEL << Q_FUNC_INFO << lockSessionKeys.indexOf(sessionKey);
 
               }

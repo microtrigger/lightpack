@@ -1,4 +1,6 @@
 #include "SelectWidget.hpp"
+#include <QScrollBar>
+#include <QResizeEvent>
 
 SelectWidget::SelectWidget() {
    list = new QListWidget(this);

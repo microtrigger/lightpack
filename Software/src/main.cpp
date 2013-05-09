@@ -24,8 +24,7 @@
  *
  */
 
-
-#include <QtGui>
+//#include <QtCore>
 #include <QFileInfo>
 #include <QMetaType>
 #include <iostream>
@@ -193,15 +192,11 @@ int main(int argc, char **argv)
     CreateMutex(NULL, FALSE, L"LightpackAppMutex");
 #   endif
     // Using locale codec for console output in messageHandler(..) function ( cout << qstring.toStdString() )
-    QTextCodec::setCodecForCStrings(QTextCodec::codecForLocale());
+//    QTextCodec::setCodecForCStrings(QTextCodec::codecForLocale());
 
     QString appDirPath = getApplicationDirectoryPath(argv[0]);
 
     LightpackApplication lightpackApp(argc, argv);
-
-    SettingsWizard wiz;
-
-    wiz.run();
 
     if (lightpackApp.isRunning())
     {        
@@ -216,7 +211,7 @@ int main(int argc, char **argv)
 
     openLogsFile(appDirPath);
 
-    qInstallMsgHandler(messageHandler);
+//    qInstallMsgHandler(messageHandler);
 
     lightpackApp.initializeAll(appDirPath);
 

@@ -1,7 +1,8 @@
 #include "../common/defs.h"
 #include "ColorButton.hpp"
 #include "debug.h"
-
+#include <QPainter>
+#include <QColorDialog>
 #define COLOR_LABEL_SPACING 5
 
 ColorButton::ColorButton(QWidget * parent) : QPushButton(parent)

@@ -28,6 +28,7 @@
 #include "LedDeviceLightpack.hpp"
 #include "LightpackPluginInterface.hpp"
 #include "version.h"
+#include <QtWidgets/QMessageBox>
 
 #include <unistd.h>
 #include <stdio.h>
@@ -103,9 +104,6 @@ void LightpackApplication::initializeAll(const QString & appDirPath)
     startApiServer();
 
     initGrabManager();
-
-    startPluginManager();
-
 
     if (!m_noGui)
     {
@@ -485,12 +483,12 @@ void LightpackApplication::startLedDeviceManager()
     connect(settings(), SIGNAL(ledCoefRedChanged(int,double))   ,m_ledDeviceManager, SLOT(updateWBAdjustments()), Qt::QueuedConnection);
     connect(settings(), SIGNAL(ledCoefGreenChanged(int,double)) ,m_ledDeviceManager, SLOT(updateWBAdjustments()), Qt::QueuedConnection);
 
-    connect(m_settingsWindow, SIGNAL(requestFirmwareVersion()),       m_ledDeviceManager, SLOT(requestFirmwareVersion()), Qt::QueuedConnection);
 //    connect(settingsObj, SIGNAL(settingsProfileChanged()),       m_ledDeviceManager, SLOT(updateDeviceSettings()), Qt::QueuedConnection);
 
 
     if (!m_noGui)
     {
+        connect(m_settingsWindow, SIGNAL(requestFirmwareVersion()),       m_ledDeviceManager, SLOT(requestFirmwareVersion()), Qt::QueuedConnection);
         connect(m_settingsWindow, SIGNAL(switchOffLeds()),                m_ledDeviceManager, SLOT(switchOffLeds()), Qt::QueuedConnection);
         connect(m_settingsWindow, SIGNAL(switchOnLeds()),                 m_ledDeviceManager, SLOT(switchOnLeds()), Qt::QueuedConnection);
         connect(m_ledDeviceManager, SIGNAL(openDeviceSuccess(bool)),    m_settingsWindow, SLOT(ledDeviceOpenSuccess(bool)), Qt::QueuedConnection);
@@ -542,6 +540,7 @@ void LightpackApplication::initGrabManager()
 
 }
 
+/*
 void LightpackApplication::startPluginManager()
 {
     DEBUG_LOW_LEVEL << Q_FUNC_INFO;
@@ -565,6 +564,7 @@ void LightpackApplication::startPluginManager()
     m_PluginThread->start();
 
 }
+
 void LightpackApplication::getConsole()
 {
     DEBUG_LOW_LEVEL << Q_FUNC_INFO;
@@ -590,7 +590,7 @@ void LightpackApplication::consoleClosing()
     DEBUG_LOW_LEVEL << Q_FUNC_INFO;
     consolePlugin = NULL;
 }
-
+*/
 void LightpackApplication::connectApiServerAndLedDeviceSignalsSlots()
 {
     if (m_isApiServerConnectedToLedDeviceSignalsSlots == false)
@@ -705,6 +705,7 @@ void LightpackApplication::handleConnectedDeviceChange(const SupportedDevices::D
     m_grabManager->setNumberOfLeds(numOfLeds);
     m_moodlampManager->setNumberOfLeds(numOfLeds);
     m_ledDeviceManager->recreateLedDevice(deviceType);
-    m_settingsWindow->handleConnectedDeviceChange(deviceType);
+    if(!m_noGui)
+        m_settingsWindow->handleConnectedDeviceChange(deviceType);
     locker.unlock();
 }

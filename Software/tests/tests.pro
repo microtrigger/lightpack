@@ -53,7 +53,6 @@ HEADERS += \
     ../src/ApiServer.hpp \
     ../src/debug.h \
     ../src/Settings.hpp \
-    ../src/plugins/PyPlugin.h \
     ../src/LightpackPluginInterface.hpp \
     SettingsWindowMockup.hpp \
     GrabCalculationTest.hpp \

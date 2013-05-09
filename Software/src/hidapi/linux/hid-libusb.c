@@ -40,7 +40,7 @@
 #include <pthread.h>
 
 /* GNU / LibUSB */
-#include "libusb.h"
+#include "usb.h"
 #include "iconv.h"
 
 #include "hidapi.h"
@@ -73,7 +73,7 @@ struct input_report {
 
 struct hid_device_ {
 	/* Handle to the actual device. */
-	libusb_device_handle *device_handle;
+	usb_dev_handle *device_handle;
 	
 	/* Endpoint information */
 	int input_endpoint;
@@ -255,16 +255,16 @@ static int get_usage(uint8_t *report_descriptor, size_t size,
 
 /* Get the first language the device says it reports. This comes from
    USB string #0. */
-static uint16_t get_first_language(libusb_device_handle *dev)
+static uint16_t get_first_language(usb_dev_handle *dev)
 {
 	uint16_t buf[32];
 	int len;
 	
 	/* Get the string from libusb. */
-	len = libusb_get_string_descriptor(dev,
+	len = usb_get_string(dev,
 			0x0, /* String ID */
 			0x0, /* Language */
-			(unsigned char*)buf,
+			(char*)buf,
 			sizeof(buf));
 	if (len < 4)
 		return 0x0;
@@ -272,17 +272,17 @@ static uint16_t get_first_language(libusb_device_handle *dev)
 	return buf[1]; // First two bytes are len and descriptor type.
 }
 
-static int is_language_supported(libusb_device_handle *dev, uint16_t lang)
+static int is_language_supported(usb_dev_handle *dev, uint16_t lang)
 {
 	uint16_t buf[32];
 	int len;
 	int i;
 	
 	/* Get the string from libusb. */
-	len = libusb_get_string_descriptor(dev,
+	len = usb_get_string(dev,
 			0x0, /* String ID */
 			0x0, /* Language */
-			(unsigned char*)buf,
+			(char*)buf,
 			sizeof(buf));
 	if (len < 4)
 		return 0x0;
@@ -302,7 +302,7 @@ static int is_language_supported(libusb_device_handle *dev, uint16_t lang)
 /* This function returns a newly allocated wide string containing the USB
    device string numbered by the index. The returned string must be freed
    by using free(). */
-static wchar_t *get_usb_string(libusb_device_handle *dev, uint8_t idx)
+static wchar_t *get_usb_string(usb_dev_handle *dev, uint8_t idx)
 {
 	char buf[512];
 	int len;
@@ -324,10 +324,10 @@ static wchar_t *get_usb_string(libusb_device_handle *dev, uint8_t idx)
 		lang = get_first_language(dev);
 		
 	/* Get the string from libusb. */
-	len = libusb_get_string_descriptor(dev,
+	len = usb_get_string(dev,
 			idx,
 			lang,
-			(unsigned char*)buf,
+			(char*)buf,
 			sizeof(buf));
 	if (len < 0)
 		return NULL;
@@ -366,7 +366,7 @@ err:
 	return str;
 }
 
-static char *make_path(libusb_device *dev, int interface_number)
+static char *make_path(usb_device *dev, int interface_number)
 {
 	char str[64];
 	snprintf(str, sizeof(str), "%04x:%04x:%02x",
@@ -402,9 +402,9 @@ int HID_API_EXPORT hid_exit(void)
 
 struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 {
-	libusb_device **devs;
-	libusb_device *dev;
-	libusb_device_handle *handle;
+	usb_device **devs;
+	usb_device *dev;
+	usb_dev_handle *handle;
 	ssize_t num_devs;
 	int i = 0;
 	
@@ -420,7 +420,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 	if (num_devs < 0)
 		return NULL;
 	while ((dev = devs[i++]) != NULL) {
-		struct libusb_device_descriptor desc;
+		struct usb_device_descriptor desc;
 		struct libusb_config_descriptor *conf_desc = NULL;
 		int j, k;
 		int interface_num = 0;
@@ -740,8 +740,8 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path)
 
 	dev = new_hid_device();
 
-	libusb_device **devs;
-	libusb_device *usb_dev;
+	usb_device **devs;
+	usb_device *usb_dev;
 	ssize_t num_devs;
 	int res;
 	int d = 0;
@@ -754,7 +754,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path)
 
 	num_devs = libusb_get_device_list(NULL, &devs);
 	while ((usb_dev = devs[d++]) != NULL) {
-		struct libusb_device_descriptor desc;
+		struct usb_device_descriptor desc;
 		struct libusb_config_descriptor *conf_desc = NULL;
 		int i,j,k;
 		libusb_get_device_descriptor(usb_dev, &desc);

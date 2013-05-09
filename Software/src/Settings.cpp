@@ -27,7 +27,7 @@
 #include "Settings.hpp"
 
 #include <QtDebug>
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <QDesktopWidget>
 #include <QSize>
 #include <QPoint>

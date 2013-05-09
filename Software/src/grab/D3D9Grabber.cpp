@@ -24,7 +24,7 @@
  */
 
 #include "D3D9Grabber.hpp"
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <qdesktopwidget.h>
 
 #ifdef D3D9_GRAB_SUPPORT
