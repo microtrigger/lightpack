@@ -55,7 +55,7 @@ win32 {
     # For QSerialDevice
     LIBS    += -luuid -ladvapi32
 
-    SOURCES += hidapi/windows/hid.c
+    SOURCES +=
 
     #DX9 grab
     LIBS    += -lgdi32 -ld3d9
@@ -83,14 +83,14 @@ win32 {
 
 unix:!macx{
     # Linux version using libusb and hidapi codes
-    SOURCES += hidapi/linux/hid-libusb.c
+    SOURCES +=
     # For QSerialDevice
     LIBS += -ludev -lrt -lXext -lX11
 }
 
 macx{
     # MacOS version using libusb and hidapi codes
-    SOURCES += hidapi/mac/hid.c
+    SOURCES +=
     LIBS += -framework IOKit \
             -framework Cocoa \
             -framework Carbon \
@@ -161,7 +161,6 @@ HEADERS += \
     grab/WinAPIGrabber.hpp \
     ../common/defs.h \
     enums.hpp     LightpackPluginInterface.hpp     ApiServer.hpp     ApiServerSetColorTask.hpp \
-    hidapi/hidapi.h \
     ../../CommonHeaders/LIGHTPACK_HW.h \
     ../../CommonHeaders/COMMANDS.h \
     ../../CommonHeaders/USB_ID.h \
@@ -186,8 +185,7 @@ HEADERS += \
 
 FORMS += SettingsWindow.ui \
     GrabWidget.ui \
-    GrabConfigWidget.ui \
-    ../SettingsWizard.ui
+    GrabConfigWidget.ui
 
 #
 #   QSerialDevice

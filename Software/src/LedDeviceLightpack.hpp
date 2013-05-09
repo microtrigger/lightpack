@@ -31,16 +31,14 @@
 #include "TimeEvaluations.hpp"
 #include "LightpackMath.hpp"
 
+#include <usb.h>
 #include "../../CommonHeaders/USB_ID.h"     /* For device VID, PID, vendor name and product name */
-#include "hidapi.h" /* USB HID API */
-
 #include "../../CommonHeaders/COMMANDS.h"   /* CMD defines */
 
 // This defines using in all data transfers to determine indexes in write_buffer[]
 // In device COMMAND have index 0, data 1 and so on, report id isn't using
-#define WRITE_BUFFER_INDEX_REPORT_ID    0
-#define WRITE_BUFFER_INDEX_COMMAND      1
-#define WRITE_BUFFER_INDEX_DATA_START   2
+#define WRITE_BUFFER_INDEX_COMMAND      0
+#define WRITE_BUFFER_INDEX_DATA_START   1
 
 class LedDeviceLightpack : public AbstractLedDevice
 {
@@ -62,11 +60,11 @@ public slots:
     int maxLedsCount() { return m_devices.size() * kLedsPerDevice;}
 
 private: 
-    bool readDataFromDevice();
-    bool writeBufferToDevice(int command, hid_device *phid_device);
+    bool readDataFromDevice(usb_dev_handle *phDev);
+    bool writeBufferToDevice(int command, usb_dev_handle *phDev);
     bool tryToReopenDevice();
     bool readDataFromDeviceWithCheck();
-    bool writeBufferToDeviceWithCheck(int command, hid_device *phid_device);
+    bool writeBufferToDeviceWithCheck(int command, usb_dev_handle *phDev);
     void resizeColorsBuffer(int buffSize);
     void closeDevices();
 
@@ -75,11 +73,11 @@ private slots:
     void timerPingDeviceTimeout();
 
 private:
-    QList<hid_device*> m_devices;
+    QList<usb_dev_handle*> m_devices;
 //    hid_device *m_hidDevice;
 
-    unsigned char m_readBuffer[65];    /* 0-ReportID, 1..65-data */
-    unsigned char m_writeBuffer[65];   /* 0-ReportID, 1..65-data */
+    unsigned char m_readBuffer[61];    /* 0-ReportID, 1..65-data */
+    unsigned char m_writeBuffer[61];   /* 0-ReportID, 1..65-data */
 
     QTimer *m_timerPingDevice;
 

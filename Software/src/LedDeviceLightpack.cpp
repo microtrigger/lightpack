@@ -205,9 +205,14 @@ void LedDeviceLightpack::requestFirmwareVersion()
 {
     DEBUG_LOW_LEVEL << Q_FUNC_INFO;
 
+    if(m_devices.size() < 1) {
+        emit commandCompleted(false);
+        return;
+    }
+
     QString fwVersion;
 
-    bool ok = readDataFromDeviceWithCheck();
+    bool ok = readDataFromDevice(m_devices[0]);
 
     // TODO: write command CMD_GET_VERSION to device
     if (ok)
@@ -242,41 +247,32 @@ void LedDeviceLightpack::open()
 {
     DEBUG_MID_LEVEL << Q_FUNC_INFO;
 
-    if (m_devices.size() > 0)
-    {
+    if (m_devices.size() > 0) {
         return;
-        closeDevices();
     }
 
-    DEBUG_LOW_LEVEL << Q_FUNC_INFO << QString("hid_open(0x%1, 0x%2)")
-                       .arg(USB_VENDOR_ID, 4, 16, QChar('0'))
-                       .arg(USB_PRODUCT_ID, 4, 16, QChar('0'));
+    struct usb_bus *busses;
+    struct usb_bus *bus;
 
-	struct hid_device_info *devs, *cur_dev;
-	const char *path_to_open = NULL;
-	hid_device * handle = NULL;
+    usb_init();
 
-	devs = hid_enumerate(USB_VENDOR_ID, USB_PRODUCT_ID);
-	cur_dev = devs;
-	while (cur_dev) {
-	    path_to_open = NULL;
-		if (cur_dev->vendor_id == USB_VENDOR_ID &&
-			cur_dev->product_id == USB_PRODUCT_ID) {
-		    path_to_open = cur_dev->path;
-		}
-		if (path_to_open) {
-			/* Open the device */
-			handle = hid_open_path(path_to_open);
+    usb_find_busses();
+    usb_find_devices();
 
-            // Immediately return from hid_read() if no data available
-            hid_set_nonblocking(handle, 1);
-            m_devices.append(handle);
-	    }
-		cur_dev = cur_dev->next;
-	}
-
-	hid_free_enumeration(devs);
-
+    busses = usb_get_busses();
+    for (bus = busses; bus; bus = bus->next) {
+        struct usb_device *dev;
+        for (dev = bus->devices; dev; dev = dev->next) {
+            if (dev->descriptor.idVendor == USB_VENDOR_ID &&
+                dev->descriptor.idProduct == USB_PRODUCT_ID) {
+                if (usb_dev_handle *phDev = usb_open(dev)) {
+                    usb_detach_kernel_driver_np(phDev, 0);
+                    usb_claim_interface(phDev, 0);
+                    m_devices.append(phDev);
+                }
+            }
+        }
+    }
 
     if (m_devices.size() == 0)
     {
@@ -292,13 +288,18 @@ void LedDeviceLightpack::open()
     emit openDeviceSuccess(true);
 }
 
-bool LedDeviceLightpack::readDataFromDevice()
+bool LedDeviceLightpack::readDataFromDevice(usb_dev_handle *phDev)
 {
     DEBUG_LOW_LEVEL << Q_FUNC_INFO;
 
-    int bytes_read = hid_read(m_devices[0], m_readBuffer, sizeof(m_readBuffer));
-
-    if(bytes_read < 0){
+    int bytes_read = usb_control_msg(phDev,
+                                     USB_ENDPOINT_IN | USB_TYPE_CLASS
+                                     | USB_RECIP_INTERFACE,
+                                     0x01, //REQ_GetReport
+                                     (2 << 8),
+                                     0x00,
+                                     reinterpret_cast<char *>(m_readBuffer), sizeof(m_readBuffer), 500);
+    if (bytes_read < 0) {
         qWarning() << "Error reading data:" << bytes_read;
         emit ioDeviceSuccess(false);
         return false;
@@ -307,28 +308,23 @@ bool LedDeviceLightpack::readDataFromDevice()
     return true;
 }
 
-bool LedDeviceLightpack::writeBufferToDevice(int command, hid_device *phid_device)
+bool LedDeviceLightpack::writeBufferToDevice(int command, usb_dev_handle *phDev)
 {    
     DEBUG_MID_LEVEL << Q_FUNC_INFO << command;
 #if 0
     DEBUG_LOW_LEVEL << Q_FUNC_INFO << "thread id: " << this->thread()->currentThreadId();
 #endif
 
-    m_writeBuffer[WRITE_BUFFER_INDEX_REPORT_ID] = 0x00;
     m_writeBuffer[WRITE_BUFFER_INDEX_COMMAND] = command;
 
-    int error = hid_write(phid_device, m_writeBuffer, sizeof(m_writeBuffer));
-    if (error < 0)
-    {
-        // Trying to repeat sending data:
-        error = hid_write(phid_device, m_writeBuffer, sizeof(m_writeBuffer));
-        if(error < 0){
-            qWarning() << "Error writing data:" << error;
-            emit ioDeviceSuccess(false);
-            return false;
-        }
-    }
-    emit ioDeviceSuccess(true);
+    int result = usb_control_msg(phDev,
+                                     USB_ENDPOINT_OUT | USB_TYPE_CLASS
+                                     | USB_RECIP_INTERFACE,
+                                     0x09, //REQ_SetReport
+                                     (2 << 8),
+                                     0x00,
+                                     reinterpret_cast<char *>(m_writeBuffer), sizeof(m_writeBuffer), 500);
+    emit ioDeviceSuccess(result > 0);
     return true;
 }
 
@@ -352,34 +348,34 @@ bool LedDeviceLightpack::readDataFromDeviceWithCheck()
 
     if (m_devices.size() > 0)
     {
-        if (!readDataFromDevice())
+        if (!readDataFromDevice(m_devices[0]))
         {
             if (tryToReopenDevice())
-                return readDataFromDevice();
+                return readDataFromDevice(m_devices[0]);
             else
                 return false;
         }
         return true;
     } else {
         if (tryToReopenDevice())
-            return readDataFromDevice();
+            return readDataFromDevice(m_devices[0]);
         else
             return false;
     }
 }
 
-bool LedDeviceLightpack::writeBufferToDeviceWithCheck(int command, hid_device *phid_device)
+bool LedDeviceLightpack::writeBufferToDeviceWithCheck(int command, usb_dev_handle *phDev)
 {
     DEBUG_MID_LEVEL << Q_FUNC_INFO;
 
-    if (phid_device != NULL)
+    if (phDev != NULL)
     {
-        if (!writeBufferToDevice(command, phid_device))
+        if (!writeBufferToDevice(command, phDev))
         {
-            if (!writeBufferToDevice(command, phid_device))
+            if (!writeBufferToDevice(command, phDev))
             {
                 if (tryToReopenDevice())
-                    return writeBufferToDevice(command, phid_device);
+                    return writeBufferToDevice(command, phDev);
                 else
                     return false;
             }
@@ -387,7 +383,7 @@ bool LedDeviceLightpack::writeBufferToDeviceWithCheck(int command, hid_device *p
         return true;
     } else {
         if (tryToReopenDevice())
-            return writeBufferToDevice(command, phid_device);
+            return writeBufferToDevice(command, phDev);
         else
             return false;
     }
@@ -417,7 +413,8 @@ void LedDeviceLightpack::closeDevices()
 {
     DEBUG_MID_LEVEL << Q_FUNC_INFO;
     for(int i=0; i < m_devices.size(); i++) {
-        hid_close(m_devices[i]);
+        usb_release_interface(m_devices[i],0);
+        usb_close(m_devices[i]);
     }
     m_devices.clear();
 }
