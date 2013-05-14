@@ -71,11 +71,11 @@ void LightpackApplication::initializeAll(const QString & appDirPath)
 
     if (!m_noGui)
     {
-        checkSystemTrayAvailability();
+        //checkSystemTrayAvailability();
 
         m_settingsWindow = new SettingsWindow();
-        m_settingsWindow->setVisible(false); /* Load to tray */
-        m_settingsWindow->createTrayIcon();
+        m_settingsWindow->setVisible(true); /* Load to tray */
+//        m_settingsWindow->createTrayIcon();
         m_settingsWindow->connectSignalsSlots();
         connect(this, SIGNAL(postInitialization()), m_settingsWindow, SLOT(onPostInit()));
 //        m_settingsWindow->profileSwitch(Settings::getCurrentProfileName());

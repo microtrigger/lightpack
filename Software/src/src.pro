@@ -55,8 +55,6 @@ win32 {
     # For QSerialDevice
     LIBS    += -luuid -ladvapi32
 
-    SOURCES +=
-
     #DX9 grab
     LIBS    += -lgdi32 -ld3d9
 
@@ -85,7 +83,8 @@ unix:!macx{
     # Linux version using libusb and hidapi codes
     SOURCES +=
     # For QSerialDevice
-    LIBS += -ludev -lrt -lXext -lX11
+    LIBS += $$QMAKE_LIBS_X11
+    LIBS += -ludev -lrt
 }
 
 macx{

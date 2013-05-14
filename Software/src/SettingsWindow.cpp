@@ -1425,7 +1425,7 @@ void SettingsWindow::profileSwitch(const QString & configName)
 }
 
 void SettingsWindow::handleProfileLoaded(const QString &configName) {
-
+    DEBUG_LOW_LEVEL << Q_FUNC_INFO << configName;
     this->labelProfile->setText(tr("Profile: %1").arg(configName));
     updateUiFromSettings();
 }

@@ -1381,7 +1381,7 @@ void Settings::initCurrentProfile(bool isResetDefault)
     QMutexLocker locker(&m_mutex);
     m_currentProfile->sync();
     locker.unlock();
-    m_this->currentProfileInited(getCurrentProfileName());
+//    emit m_this->currentProfileInited(getCurrentProfileName());
 }
 
 
