@@ -254,8 +254,6 @@ void LedDeviceLightpack::open()
     struct usb_bus *busses;
     struct usb_bus *bus;
 
-    usb_init();
-
     usb_find_busses();
     usb_find_devices();
 
@@ -266,8 +264,8 @@ void LedDeviceLightpack::open()
             if (dev->descriptor.idVendor == USB_VENDOR_ID &&
                 dev->descriptor.idProduct == USB_PRODUCT_ID) {
                 if (usb_dev_handle *phDev = usb_open(dev)) {
-                    usb_detach_kernel_driver_np(phDev, 0);
-                    usb_claim_interface(phDev, 0);
+                    DEBUG_LOW_LEVEL << "initializing usb, detaching kernel driver: " << usb_detach_kernel_driver_np(phDev, 0);
+                    DEBUG_LOW_LEVEL << "initializing usb, claiming interface: " << usb_claim_interface(phDev, 0);
                     m_devices.append(phDev);
                 }
             }
@@ -324,6 +322,8 @@ bool LedDeviceLightpack::writeBufferToDevice(int command, usb_dev_handle *phDev)
                                      (2 << 8),
                                      0x00,
                                      reinterpret_cast<char *>(m_writeBuffer), sizeof(m_writeBuffer), 500);
+    if ( result < 1)
+        qWarning() << "couldn't write to usb: " << result;
     emit ioDeviceSuccess(result > 0);
     return true;
 }

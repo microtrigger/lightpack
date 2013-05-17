@@ -29,6 +29,16 @@
 #include "debug.h"
 #include "LightpackMath.hpp"
 
+#include "WinAPIGrabber.hpp"
+#include "WinAPIGrabberEachWidget.hpp"
+#include "QtGrabber.hpp"
+#include "QtGrabberEachWidget.hpp"
+#include "X11Grabber.hpp"
+#include "MacOSGrabber.hpp"
+#include "D3D9Grabber.hpp"
+#include "D3D10Grabber/D3D10Grabber.hpp"
+#include "FBGrabber.hpp"
+
 using namespace SettingsScope;
 
 GrabManager::GrabManager(QWidget *parent) : QObject(parent)
@@ -447,6 +457,7 @@ void GrabManager::initGrabbers()
     for (int i = 0; i < Grab::GrabbersCount; i++)
         m_grabbers.append(NULL);
 
+/*
 #ifdef Q_WS_WIN
     m_grabbers[Grab::GrabberTypeWinAPI] = initGrabber(new WinAPIGrabber(NULL, &m_colorsNew, &m_ledWidgets));
     m_grabbers[Grab::GrabberTypeD3D9] = initGrabber(new D3D9Grabber(NULL, &m_colorsNew, &m_ledWidgets));
@@ -464,10 +475,16 @@ void GrabManager::initGrabbers()
 #ifdef Q_WS_WIN
     m_grabbers[Grab::GrabberTypeWinAPIEachWidget] = initGrabber(new WinAPIGrabberEachWidget(NULL, &m_colorsNew, &m_ledWidgets));
 #endif
+*/
+#ifdef FB_GRAB_SUPPORT
+    m_grabbers[Grab::GrabberTypeFrameBuffer] = initGrabber(new FBGrabber(NULL, &m_colorsNew, &m_ledWidgets));
+#endif
+/*
 #ifdef D3D10_GRAB_SUPPORT
     m_d3d10Grabber = static_cast<D3D10Grabber *>(initGrabber(new D3D10Grabber(NULL, &m_colorsNew, &m_ledWidgets)));
     connect(m_d3d10Grabber, SIGNAL(grabberStateChangeRequested(bool)), SLOT(onGrabberStateChangeRequested(bool)));
 #endif
+*/
 }
 
 GrabberBase *GrabManager::initGrabber(GrabberBase * grabber) {
@@ -488,8 +505,8 @@ GrabberBase *GrabManager::queryGrabber(Grab::GrabberType grabberType)
     if (m_grabbers[grabberType] != NULL) {
         result = m_grabbers[grabberType];
     } else {
-        qCritical() << Q_FUNC_INFO << "unsupported for the platform grabber type: " << grabberType << ", using QtGrabber";
-        result = m_grabbers[Grab::GrabberTypeQt];
+        qCritical() << Q_FUNC_INFO << "unsupported for the platform grabber type: " << grabberType << ", using FBGrabber";
+        result = m_grabbers[Grab::GrabberTypeFrameBuffer];
     }
 
     result->setGrabInterval(Settings::getGrabSlowdown());

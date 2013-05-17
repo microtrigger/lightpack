@@ -27,6 +27,8 @@
 #include <QtNetwork>
 #include <stdlib.h>
 
+#include <QApplication>
+
 #include "ApiServer.hpp"
 #include "LightpackPluginInterface.hpp"
 #include "ApiServerSetColorTask.hpp"

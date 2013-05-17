@@ -30,6 +30,7 @@
 #include "debug.h"
 #include <QApplication>
 #include <QDesktopWidget>
+#include <QScreen>
 
 QtGrabber::QtGrabber(QObject *parent, QList<QRgb> *grabResult, QList<GrabWidget *> *grabAreasGeometry)
     : TimeredGrabber(parent, grabResult, grabAreasGeometry)
@@ -60,15 +61,18 @@ void QtGrabber::updateGrabMonitor(QWidget *widget)
 
 GrabResult QtGrabber::_grab()
 {
-    DEBUG_HIGH_LEVEL << Q_FUNC_INFO;
-    QPixmap pixmap = QPixmap::grabWindow(QApplication::desktop()->screen(-1) ->winId(),
-                                  screenres.x(), //!
-                                  screenres.y(), //!
+    DEBUG_HIGH_LEVEL << Q_FUNC_INFO << " available screens: " << QApplication::screens().size();
+    for (int i = 0; i < QApplication::screens().size(); ++i) {
+        DEBUG_HIGH_LEVEL << Q_FUNC_INFO << " geometry " << QApplication::screens()[i]->geometry();
+        DEBUG_HIGH_LEVEL << Q_FUNC_INFO << " available virtualSiblings: " << QApplication::screens()[i]->virtualSiblings().size();
+
+    }
+    QScreen *screen = QApplication::screens().first();
+    QPixmap pixmap = screen->grabWindow(QApplication::desktop()->winId(),
+                                  0, //!
+                                  0, //!
                                   screenres.width(),
                                   screenres.height());
-//    for(int i = 0; i < widgets.size(); i++) {
-//        widgetsColors->append(getColor(pixmap, widgets[i]));
-//    }
     m_grabResult->clear();
     foreach(GrabWidget * widget, *m_grabWidgets) {
         m_grabResult->append( widget->isAreaEnabled() ? getColor(pixmap,widget) : qRgb(0,0,0) );

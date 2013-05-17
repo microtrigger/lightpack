@@ -30,14 +30,7 @@
 #include "SettingsWindow.hpp"
 #include "TimeEvaluations.hpp"
 #include "GrabWidget.hpp"
-#include "WinAPIGrabber.hpp"
-#include "WinAPIGrabberEachWidget.hpp"
-#include "QtGrabber.hpp"
-#include "QtGrabberEachWidget.hpp"
-#include "X11Grabber.hpp"
-#include "MacOSGrabber.hpp"
-#include "D3D9Grabber.hpp"
-#include "D3D10Grabber/D3D10Grabber.hpp"
+#include "GrabberBase.hpp"
 
 #include "enums.hpp"
 

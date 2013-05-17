@@ -33,6 +33,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <iostream>
+#include <usb.h>
 
 
 using namespace std;
@@ -53,6 +54,10 @@ LightpackApplication::LightpackApplication(int &argc, char **argv)
 
 void LightpackApplication::initializeAll(const QString & appDirPath)
 {
+    usb_init();
+    usb_set_debug(2);
+
+
     setApplicationName("Prismatik");
     setOrganizationName("Pixelkit LLC");
     setApplicationVersion(VERSION_STR);
@@ -71,11 +76,11 @@ void LightpackApplication::initializeAll(const QString & appDirPath)
 
     if (!m_noGui)
     {
-        //checkSystemTrayAvailability();
+        checkSystemTrayAvailability();
 
         m_settingsWindow = new SettingsWindow();
-        m_settingsWindow->setVisible(true); /* Load to tray */
-//        m_settingsWindow->createTrayIcon();
+        m_settingsWindow->setVisible(false); /* Load to tray */
+        m_settingsWindow->createTrayIcon();
         m_settingsWindow->connectSignalsSlots();
         connect(this, SIGNAL(postInitialization()), m_settingsWindow, SLOT(onPostInit()));
 //        m_settingsWindow->profileSwitch(Settings::getCurrentProfileName());
@@ -114,6 +119,8 @@ void LightpackApplication::initializeAll(const QString & appDirPath)
     this->settingsChanged();
 
     handleConnectedDeviceChange(settings()->getConnectedDevice());
+
+    m_moodlampManager->settingsProfileChanged("");
 
 
     emit postInitialization();

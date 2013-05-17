@@ -36,8 +36,9 @@
 #include "enums.hpp"
 #include "debug.h"
 
-#include <QtWidgets/QStatusBar>
-#include <QtWidgets/QMenu>
+#include <QStatusBar>
+#include <QMenu>
+#include <QDesktopWidget>
 
 //#include "plugins/PyPlugin.h"
 

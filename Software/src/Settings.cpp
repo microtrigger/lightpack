@@ -182,6 +182,7 @@ static const QString WinAPIEachWidget = "WinAPIEachWidget";
 static const QString X11 = "X11";
 static const QString D3D9 = "D3D9";
 static const QString MacCoreGraphics = "MacCoreGraphics";
+static const QString FB = "FB";
 }
 
 } /*Value*/
@@ -978,6 +979,11 @@ Grab::GrabberType Settings::getGrabberType()
 #ifdef X11_GRAB_SUPPORT
     if (strGrabber == Profile::Value::GrabberType::X11)
         return Grab::GrabberTypeX11;
+#endif
+
+#ifdef FB_GRAB_SUPPORT
+    if (strGrabber == Profile::Value::GrabberType::FB)
+        return Grab::GrabberTypeFrameBuffer;
 #endif
 
 #ifdef MAC_OS_CG_GRAB_SUPPORT

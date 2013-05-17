@@ -28,6 +28,7 @@
 
 #include <qglobal.h>
 
+#define FB_GRAB_SUPPORT
 #define QT_GRAB_SUPPORT
 #ifdef Q_WS_WIN
 #   define WINAPI_GRAB_SUPPORT

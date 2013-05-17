@@ -135,7 +135,8 @@ SOURCES += \
     grab/WinAPIGrabberEachWidget.cpp \
     grab/D3D9Grabber.cpp \
     GrabManager.cpp \
-    AbstractLedDevice.cpp
+    AbstractLedDevice.cpp \
+    grab/FBGrabber.cpp
 
 HEADERS += \
     LightpackApplication.hpp \
@@ -180,7 +181,8 @@ HEADERS += \
     grab/D3D9Grabber.hpp \
     grab/MacOSGrabber.hpp \
     colorspace_types.h \
-    AbstractLedDevice.hpp
+    AbstractLedDevice.hpp \
+    grab/FBGrabber.hpp
 
 FORMS += SettingsWindow.ui \
     GrabWidget.ui \
