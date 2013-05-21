@@ -6,7 +6,7 @@
 
 QT         += network testlib
 
-QT         += gui
+QT         += widgets
 
 TARGET      = LightpackTests
 DESTDIR     = bin
@@ -27,49 +27,34 @@ DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 INCLUDEPATH += ../src/ ../src/grab ../hooks
 SOURCES += \
-    LightpackApiTest.cpp \
-    ../src/ApiServerSetColorTask.cpp \
-    ../src/ApiServer.cpp \
     ../src/Settings.cpp \
-    ../src/LightpackPluginInterface.cpp \
-    ../src/plugins/PyPlugin.cpp \
+#    ../src/LightpackPluginInterface.cpp \
+#    ../src/plugins/PyPlugin.cpp \
     ../src/grab/calculations.cpp \
     SettingsWindowMockup.cpp \
     main.cpp \
     GrabCalculationTest.cpp \
     lightpackmathtest.cpp \
-    ../src/LightpackMath.cpp \
-    HooksTest.cpp \
-    ../hooks/ProxyFuncJmp.cpp \
-    ../hooks/hooksutils.cpp \
-    ../hooks/ProxyFuncVFTable.cpp \
-    ../hooks/Logger.cpp
+    ../src/LightpackMath.cpp
 
 HEADERS += \
     ../src/grab/calculations.hpp \
     ../common/defs.h \
     ../src/enums.hpp \
-    ../src/ApiServerSetColorTask.hpp \
-    ../src/ApiServer.hpp \
+#    ../src/ApiServerSetColorTask.hpp \
+#    ../src/ApiServer.hpp \
     ../src/debug.h \
     ../src/Settings.hpp \
-    ../src/LightpackPluginInterface.hpp \
+#    ../src/LightpackPluginInterface.hpp \
     SettingsWindowMockup.hpp \
     GrabCalculationTest.hpp \
-    LightpackApiTest.hpp \
     lightpackmathtest.hpp \
-    ../src/LightpackMath.hpp \
-    HooksTest.h \
-    ../hooks/ProxyFuncJmp.hpp \
-    ../hooks/ProxyFunc.hpp \
-    ../hooks/hooksutils.h \
-    ../hooks/ProxyFuncVFTable.hpp \
-    ../hooks/Logger.hpp
+    ../src/LightpackMath.hpp
 
 
 #
 # PythonQt
 #
-include (../PythonQt/build/common.prf )
-include (../PythonQt/build/PythonQt.prf )
-include (../PythonQt/build/PythonQt_QtAll.prf )
+#include (../PythonQt/build/common.prf )
+#include (../PythonQt/build/PythonQt.prf )
+#include (../PythonQt/build/PythonQt_QtAll.prf )

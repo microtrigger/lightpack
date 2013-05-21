@@ -26,22 +26,6 @@
 
 #include "FBGrabber.hpp"
 
-/*
- * fbgrab - takes screenshots using the framebuffer.
- *
- * (C) Gunnar Monell <gmo@linux.nu> 2002
- *
- * This program is free Software, see the COPYING file
- * and is based on Stephan Beyer's <fbshot@s-beyer.de> FBShot
- * (C) 2000.
- *
- * For features and differences, read the manual page.
- *
- * This program has been checked with "splint +posixlib" without
- * warnings. Splint is available from http://www.splint.org/ .
- * Patches and enhancements of fbgrab have to fulfill this too.
- */
-
 #ifdef FB_GRAB_SUPPORT
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,15 +37,7 @@
 #include "debug.h"
 #include <linux/fb.h> /* to handle framebuffer ioctls */
 
-#define	DEFAULT_FB	"/dev/fb0"
 #define MAX_LEN 512
-
-void getFrameBufferData(int fd, struct fb_var_screeninfo *fb_varinfo_p)
-{
-
-    if (ioctl(fd, FBIOGET_VSCREENINFO, fb_varinfo_p) != 0)
-        qCritical() << ("ioctl FBIOGET_VSCREENINFO");
-}
 
 inline size_t getBytesPerPixel(const int bbp)
 {
@@ -73,48 +49,11 @@ inline size_t getBufSize(const struct fb_var_screeninfo *fb_info)
     return fb_info->xres * fb_info->yres * getBytesPerPixel(fb_info->bits_per_pixel);
 }
 
-inline int min(int a, int b)
-{
-    return a < b ? a : b;
-}
+#define _565R(b,x) (b[x+1] & 0xf8)
+#define _565G(b,x) ((((b[x+1] << 3)&0x38) | ((b[x] >> 5) & 0x07))<<2)
+#define _565B(b,x) ((b[x] & 0x1f) << 3)
 
-inline int max(int a, int b)
-{
-    return a > b ? a : b;
-}
-
-void readFrameBuffer(const int fd, size_t bytes, unsigned char *buf_p)
-{
-    int res = read(fd, buf_p, bytes);
-    if (res != (ssize_t) bytes)
-        qCritical() << ("Error: Not enough memory or data: \n") << res << " < " << bytes;
-}
-
-void convert1555to32(int width, int height,
-                unsigned char *inbuffer,
-                unsigned char *outbuffer)
-{
-    unsigned int i;
-
-    for (i=0; i < (unsigned int) height*width*2; i+=2)
-    {
-    /* BLUE  = 0 */
-    outbuffer[(i<<1)+0] = (inbuffer[i+1] & 0x7C) << 1;
-    /* GREEN = 1 */
-        outbuffer[(i<<1)+1] = (((inbuffer[i+1] & 0x3) << 3) |
-                 ((inbuffer[i] & 0xE0) >> 5)) << 3;
-    /* RED   = 2 */
-    outbuffer[(i<<1)+2] = (inbuffer[i] & 0x1f) << 3;
-    /* ALPHA = 3 */
-    outbuffer[(i<<1)+3] = '\0';
-    }
-}
-
-#define _565R(b,x) (b[x+1] & 0xf8 << 3)
-#define _565G(b,x) ((b[x+1] & 0x07 << 3) | (b[x] & 0xE0) >> 5) << 2
-#define _565B(b,x) (b[x] & 0x1f << 3)
-
-QRgb getColor(const unsigned char *buf, const struct fb_var_screeninfo &fb_info, const QRect &rect)
+QRgb getColor(const unsigned char *buf, struct fb_var_screeninfo &fb_info, const QRect &rect)
 {
 
     DEBUG_HIGH_LEVEL << Q_FUNC_INFO
@@ -131,8 +70,8 @@ QRgb getColor(const unsigned char *buf, const struct fb_var_screeninfo &fb_info,
     }
 
     // Ignore part of LED widget which out of screen
-    if( rect.x() < 0 ) {
-        width  += x;  /* reduce width  */
+    if( x < 0 ) {
+        width += x;  /* reduce width  */
         x = 0;
     }
     if( y < 0 ) {
@@ -155,29 +94,29 @@ QRgb getColor(const unsigned char *buf, const struct fb_var_screeninfo &fb_info,
         return 0x000000;
     }
 
-    unsigned count = 0; // count the amount of pixels taken into account
-    unsigned bytes_per_pixel = getBytesPerPixel(fb_info.bits_per_pixel);
-    unsigned endIndex = (screenWidth * (y + height) + x + width) * bytes_per_pixel;
-    register unsigned index = (screenWidth * y + x) * bytes_per_pixel; // index of the selected pixel in pbPixelsBuff
-    register unsigned r = 0, g = 0, b = 0;
+
+    unsigned long count = 0; // count the amount of pixels taken into account
+    const unsigned char bytes_per_pixel = getBytesPerPixel(fb_info.bits_per_pixel);
+    unsigned long r = 0, g = 0, b = 0;
+//    qWarning() << "bbp = " << fb_info.bits_per_pixel << " bytesPerPixel = " << bytes_per_pixel;
     switch (fb_info.bits_per_pixel) {
         case 16:
-            while (index < endIndex - width * bytes_per_pixel) {
+            for (int k = y; k < y + height; k++) {
+                register unsigned long index = (screenWidth * k + x) * bytes_per_pixel; // index of the selected pixel in pbPixelsBuff
                 for(int i = 0; i < width; i += 4) {
                     b += _565B(buf,index) + _565B(buf,index+2) + _565B(buf,index+4) + _565B(buf,index+6);
                     g += _565G(buf,index) + _565G(buf,index+2) + _565G(buf,index+4) + _565G(buf,index+6);
                     r += _565R(buf,index) + _565R(buf,index+2) + _565R(buf,index+4) + _565R(buf,index+6);
 
-                    count+=4;
+                    count += 4;
                     index += bytes_per_pixel * 4;
                 }
-
-                index += (screenWidth - width) * bytes_per_pixel;
             }
             break;
 
-        case 32:
-            while (index < endIndex - width * bytes_per_pixel) {
+/*        case 32:
+            for (int k = y; k < y + height; k++) {
+                register unsigned long index = (screenWidth * k + x) * bytes_per_pixel; // index of the selected pixel in pbPixelsBuff
                 for(int i = 0; i < width; i += 4) {
                     b += buf[index]     + buf[index + 4] + buf[index + 8 ] + buf[index + 12];
                     g += buf[index + 1] + buf[index + 5] + buf[index + 9 ] + buf[index + 13];
@@ -186,10 +125,9 @@ QRgb getColor(const unsigned char *buf, const struct fb_var_screeninfo &fb_info,
                     count+=4;
                     index += bytes_per_pixel * 4;
                 }
-
-                index += (screenWidth - width) * bytes_per_pixel;
             }
             break;
+*/
         default:
             qCritical() << "unsupported bitsPerPixel amount: " << fb_info.bits_per_pixel;
     }
@@ -207,48 +145,75 @@ QRgb getColor(const unsigned char *buf, const struct fb_var_screeninfo &fb_info,
     return result;
 }
 
-FBGrabber::FBGrabber(QObject *parent, QList<QRgb> *grabResult, QList<GrabWidget *> *grabAreasGeometry) : TimeredGrabber(parent, grabResult, grabAreasGeometry)
+FBGrabberDataProvider::FBGrabberDataProvider(const char *deviceFileName) : FBGrabberDataProviderTrait()
 {
+    m_deviceFileName = const_cast<char *>(deviceFileName);
+    m_fd = 0;
+}
+
+int FBGrabberDataProvider::openDevice()
+{
+    if(m_fd != 0) {
+        return -2;
+    }
+    if(-1 == (m_fd=open(m_deviceFileName, O_RDONLY))) {
+        fprintf (stderr, "Error: Couldn't open %s.\n", m_deviceFileName);
+        return -1;
+    }
+    return 0;
+}
+
+void FBGrabberDataProvider::closeDevice()
+{
+    if(m_fd) {
+        close(m_fd);
+        m_fd=0;
+    }
+}
+
+fb_var_screeninfo * FBGrabberDataProvider::readFbScreenInfo(fb_var_screeninfo *pFbScreenInfo)
+{
+
+    if (ioctl(m_fd, FBIOGET_VSCREENINFO, pFbScreenInfo) != 0) {
+        return NULL;
+        qCritical() << ("ioctl FBIOGET_VSCREENINFO failed");
+    }
+
+    DEBUG_HIGH_LEVEL << Q_FUNC_INFO << "bbp: " << pFbScreenInfo->bits_per_pixel;
+    DEBUG_HIGH_LEVEL << Q_FUNC_INFO << "resolution: " << pFbScreenInfo->xres << "x" << pFbScreenInfo->yres;
+    DEBUG_HIGH_LEVEL << Q_FUNC_INFO << "virtual resolution: " << pFbScreenInfo->xres_virtual << "x" << pFbScreenInfo->yres_virtual;
+
+    return pFbScreenInfo;
+}
+
+unsigned char * FBGrabberDataProvider::readFbData(unsigned char *pBuf, size_t bytesToRead)
+{
+    int res = read(m_fd, pBuf, bytesToRead);
+    if (res != (ssize_t) bytesToRead) {
+        qCritical() << ("Error: Not enough memory or data: \n") << res << " < " << bytesToRead;
+        return NULL;
+    }
+    return pBuf;
+}
+
+FBGrabber::FBGrabber(QObject *parent, QList<QRgb> *grabResult, QList<GrabWidget *> *grabAreasGeometry, FBGrabberDataProviderTrait *dataProvider) : TimeredGrabber(parent, grabResult, grabAreasGeometry)
+{
+    m_dataProvider = dataProvider;
     m_bufSize = 0;
     m_buf = 0;
-    m_fd = 0;
-    if (NULL == m_device) {
-        m_device = getenv("FRAMEBUFFER");
-        if (NULL == m_device) {
-            m_device = DEFAULT_FB;
-        }
-    }
 }
 
 void FBGrabber::init()
 {
-    if(m_fd)
-        return;
     TimeredGrabber::init();
-    DEBUG_LOW_LEVEL << Q_FUNC_INFO;
-    /* now open framebuffer device */
-    if(-1 == (m_fd=open(m_device, O_RDONLY)))
-    {
-        fprintf (stderr, "Error: Couldn't open %s.\n", m_device);
-    }
-
-//    getFrameBufferData(m_fd, &m_fb_info);
-
-//    m_bufSize = getBufSize( m_fb_info);
-
-//    m_buf = (unsigned char *)malloc(m_bufSize);
-
-//    if(m_buf == NULL)
-//        qCritical() << ("Not enough memory");
-
 }
 
 FBGrabber::~FBGrabber()
 {
-    if(m_fd)
-        close(m_fd);
     if(m_buf)
         free(m_buf);
+    if(m_dataProvider)
+        delete m_dataProvider;
 }
 
 const char* FBGrabber::getName()
@@ -265,28 +230,41 @@ void FBGrabber::updateGrabMonitor(QWidget *widget)
 GrabResult FBGrabber::_grab()
 {
     DEBUG_HIGH_LEVEL << Q_FUNC_INFO;
-    getFrameBufferData(m_fd, &m_fb_info);
 
-    DEBUG_HIGH_LEVEL << Q_FUNC_INFO << "bbp: " << m_fb_info.bits_per_pixel;
-    if (m_bufSize != getBufSize(&m_fb_info)) {
-        m_bufSize = getBufSize(&m_fb_info);
-        if (m_buf) {
-            free(m_buf);
-            m_buf = NULL;
+    GrabResult result = GrabResultError;
+
+    /* now open framebuffer device */
+    if(m_dataProvider->openDevice() == 0)
+    {
+
+        fb_var_screeninfo fb_info;
+        if (m_dataProvider->readFbScreenInfo(&fb_info)) {
+            if (m_bufSize != getBufSize(&fb_info)) {
+                m_bufSize = getBufSize(&fb_info);
+                if (m_buf) {
+                    free(m_buf);
+                    m_buf = NULL;
+                }
+                m_buf = (unsigned char *) malloc(m_bufSize);
+                memset(m_buf, 0, m_bufSize);
+
+                DEBUG_MID_LEVEL << "new buffer size: "<< m_bufSize;
+            }
+
+            if(m_dataProvider->readFbData(m_buf, m_bufSize)) {
+                fprintf(stderr, "got fb: 0x%x 0x%x...\n", m_buf[0], m_buf[1]);
+                m_grabResult->clear();
+                foreach(GrabWidget * widget, *m_grabWidgets) {
+                    m_grabResult->append( widget->isAreaEnabled() ? getColor(m_buf, fb_info, widget->geometry()) : qRgb(0,0,0) );
+                }
+                result = GrabResultOk;
+            }
+
         }
-        m_buf = (unsigned char *) malloc(m_bufSize);
-        memset(m_buf, 0, m_bufSize);
-
-        DEBUG_HIGH_LEVEL << "new buffer size: "<< m_bufSize;
     }
 
-    readFrameBuffer(m_fd, m_bufSize, m_buf);
+    m_dataProvider->closeDevice();
 
-    m_grabResult->clear();
-    foreach(GrabWidget * widget, *m_grabWidgets) {
-        m_grabResult->append( widget->isAreaEnabled() ? getColor(m_buf,m_fb_info,widget->geometry()) : qRgb(0,0,0) );
-    }
-
-    return GrabResultOk;
+    return result;
 }
 #endif

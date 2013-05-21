@@ -32,10 +32,38 @@
 #include "TimeredGrabber.hpp"
 #include <linux/fb.h>
 
+#define	DEFAULT_FB	"/dev/fb0\0"
+
+class FBGrabberDataProviderTrait
+{
+public:
+    virtual ~FBGrabberDataProviderTrait(){}
+    virtual int openDevice() = 0;
+    virtual fb_var_screeninfo * readFbScreenInfo(fb_var_screeninfo *pFbScreenInfo) = 0;
+    virtual unsigned char * readFbData(unsigned char *pBuf, size_t bytesToRead) = 0;
+    virtual void closeDevice() = 0;
+};
+
+class FBGrabberDataProvider : public FBGrabberDataProviderTrait
+{
+public:
+    FBGrabberDataProvider():m_fd(0), m_deviceFileName(DEFAULT_FB){}
+    FBGrabberDataProvider(const char *deviceFileName);
+    ~FBGrabberDataProvider(){}
+
+    virtual int openDevice();
+    virtual fb_var_screeninfo * readFbScreenInfo(fb_var_screeninfo *pFbScreenInfo);
+    virtual unsigned char * readFbData(unsigned char *pBuf, size_t bytesToRead);
+    virtual void closeDevice();
+private:
+    char *m_deviceFileName;
+    int m_fd;
+};
+
 class FBGrabber : public TimeredGrabber
 {
 public:
-    FBGrabber(QObject *parent, QList<QRgb> *grabResult, QList<GrabWidget *> *grabAreasGeometry);
+    FBGrabber(QObject *parent, QList<QRgb> *grabResult, QList<GrabWidget *> *grabAreasGeometry, FBGrabberDataProviderTrait *dataProvider);
     ~FBGrabber();
     virtual void init();
     virtual const char * getName();
@@ -45,10 +73,8 @@ protected:
     virtual GrabResult _grab();
 
 private:
-    char * m_device;
-    int m_fd;
-    fb_var_screeninfo m_fb_info;
-    unsigned char * m_buf;
+    FBGrabberDataProviderTrait *m_dataProvider;
+    unsigned char *m_buf;
     size_t m_bufSize;
 
 

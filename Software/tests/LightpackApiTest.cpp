@@ -53,7 +53,7 @@ LightpackApiTest::LightpackApiTest()
 
 void LightpackApiTest::initTestCase()
 {
-    QTextCodec::setCodecForCStrings(QTextCodec::codecForLocale());
+//    QTextCodec::setCodecForLocale(CodecForCStrings(QTextCodec::codecForLocale());
 
     Settings::Initialize(QDir::currentPath(), true);
 

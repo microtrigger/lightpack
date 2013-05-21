@@ -12,7 +12,7 @@ public:
 private slots:
     void jmpHookTestCase();
     void vfTableHookTestCase();
-    void reportLogTestCase();
+//    void reportLogTestCase();
 
 };
 

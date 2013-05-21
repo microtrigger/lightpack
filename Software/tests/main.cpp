@@ -3,8 +3,11 @@
 #include "LightpackApiTest.hpp"
 #include "GrabCalculationTest.hpp"
 #include "lightpackmathtest.hpp"
-#include "HooksTest.h"
+//#include "HooksTest.h"
 #include <iostream>
+#include "debug.h"
+
+unsigned g_debugLevel=3;
 
 using namespace std;
 
@@ -17,9 +20,9 @@ int main(int argc, char *argv[])
     QStringList summary;
 
     tests.append(new GrabCalculationTest());
-    tests.append(new HooksTest());
+//    tests.append(new HooksTest());
     tests.append(new LightpackMathTest());
-    tests.append(new LightpackApiTest());
+//    tests.append(new LightpackApiTest());
 
 
     for(int i=0; i < tests.size(); i++) {

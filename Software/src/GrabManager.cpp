@@ -477,7 +477,7 @@ void GrabManager::initGrabbers()
 #endif
 */
 #ifdef FB_GRAB_SUPPORT
-    m_grabbers[Grab::GrabberTypeFrameBuffer] = initGrabber(new FBGrabber(NULL, &m_colorsNew, &m_ledWidgets));
+    m_grabbers[Grab::GrabberTypeFrameBuffer] = initGrabber(new FBGrabber(NULL, &m_colorsNew, &m_ledWidgets, new FBGrabberDataProvider()));
 #endif
 /*
 #ifdef D3D10_GRAB_SUPPORT

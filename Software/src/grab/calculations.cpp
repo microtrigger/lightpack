@@ -28,7 +28,9 @@
 namespace Grab {
     namespace Calculations {
 
-        const char bytesPerPixel = 4;
+#define _565R(b,x) (b[x+1] & 0xf8)
+#define _565G(b,x) ((((b[x+1] << 3)&0x38) | ((b[x] >> 5) & 0x07))<<2)
+#define _565B(b,x) ((b[x] & 0x1f) << 3)
 
         QRgb calculateAvgColor(QRgb *result, unsigned char *buffer, BufferFormat bufferFormat, unsigned int pitch, const QRect &rect ) {
 
@@ -36,71 +38,96 @@ namespace Grab {
 
             int count = 0; // count the amount of pixels taken into account
             register unsigned int r=0, g=0, b=0;
+            const char kUnrollRate = 4;
 
             switch(bufferFormat) {
-            case BufferFormatArgb:
+            case BufferFormatArgb: {
 
+                const char kBytesPerPixel = 4;
                 for(int currentY = 0; currentY < rect.height(); currentY++) {
-                    int index = pitch * (rect.y()+currentY) + rect.x()*bytesPerPixel;
-                    for(int currentX = 0; currentX < rect.width(); currentX += 4) {
+                    int index = pitch * (rect.y()+currentY) + rect.x()*kBytesPerPixel;
+                    for(int currentX = 0; currentX < rect.width(); currentX += kUnrollRate) {
                         b += buffer[index]   + buffer[index + 4] + buffer[index + 8 ] + buffer[index + 12];
                         g += buffer[index+1] + buffer[index + 5] + buffer[index + 9 ] + buffer[index + 13];
                         r += buffer[index+2] + buffer[index + 6] + buffer[index + 10] + buffer[index + 14];
-                        count += 4;
-                        index += bytesPerPixel * 4;
+                        count += kUnrollRate;
+                        index += kBytesPerPixel * kUnrollRate;
                     }
 
                 }
                 break;
+            }
 
-            case BufferFormatAbgr:
+            case BufferFormatAbgr: {
+                const char kBytesPerPixel = 4;
                 for(int currentY = 0; currentY < rect.height(); currentY++) {
-                    int index = pitch * (rect.y()+currentY) + rect.x()*bytesPerPixel;
-                    for(int currentX = 0; currentX < rect.width(); currentX += 4) {
+                    int index = pitch * (rect.y()+currentY) + rect.x()*kBytesPerPixel;
+                    for(int currentX = 0; currentX < rect.width(); currentX += kUnrollRate) {
                         r += buffer[index]   + buffer[index + 4] + buffer[index + 8 ] + buffer[index + 12];
                         g += buffer[index+1] + buffer[index + 5] + buffer[index + 9 ] + buffer[index + 13];
                         b += buffer[index+2] + buffer[index + 6] + buffer[index + 10] + buffer[index + 14];
-                        count += 4;
-                        index += bytesPerPixel * 4;
+                        count += kUnrollRate;
+                        index += kBytesPerPixel * kUnrollRate;
                     }
                 }
                 break;
+            }
 
-            case BufferFormatRgba:
+            case BufferFormatRgba: {
+                const char kBytesPerPixel = 4;
                 for(int currentY = 0; currentY < rect.height(); currentY++) {
-                    int index = pitch * (rect.y()+currentY) + rect.x()*bytesPerPixel;
-                    for(int currentX = 0; currentX < rect.width(); currentX += 4) {
+                    int index = pitch * (rect.y()+currentY) + rect.x()*kBytesPerPixel;
+                    for(int currentX = 0; currentX < rect.width(); currentX += kUnrollRate) {
                         b += buffer[index+1] + buffer[index + 5] + buffer[index + 9 ] + buffer[index + 13];
                         g += buffer[index+2] + buffer[index + 6] + buffer[index + 10] + buffer[index + 14];
                         r += buffer[index+3] + buffer[index + 7] + buffer[index + 11] + buffer[index + 15];
-                        count += 4;
-                        index += bytesPerPixel * 4;
+                        count += kUnrollRate;
+                        index += kBytesPerPixel * kUnrollRate;
                     }
 
                 }
                 break;
-            case BufferFormatBgra:
+            }
+            case BufferFormatBgra: {
+                const char kBytesPerPixel = 4;
                 for(int currentY = 0; currentY < rect.height(); currentY++) {
-                    int index = pitch * (rect.y()+currentY) + rect.x()*bytesPerPixel;
-                    for(int currentX = 0; currentX < rect.width(); currentX += 4) {
+                    int index = pitch * (rect.y()+currentY) + rect.x()*kBytesPerPixel;
+                    for(int currentX = 0; currentX < rect.width(); currentX += kUnrollRate) {
                         r += buffer[index+1] + buffer[index + 5] + buffer[index + 9 ] + buffer[index + 13];
                         g += buffer[index+2] + buffer[index + 6] + buffer[index + 10] + buffer[index + 14];
                         b += buffer[index+3] + buffer[index + 7] + buffer[index + 11] + buffer[index + 15];
-                        count += 4;
-                        index += bytesPerPixel * 4;
+                        count += kUnrollRate;
+                        index += kBytesPerPixel * kUnrollRate;
                     }
 
                 }
                 break;
+            }
+
+            case BufferFormatRgb565: {
+                const char kBytesPerPixel = 2;
+                for(int currentY = 0; currentY < rect.height(); currentY++) {
+                    int index = pitch * (rect.y()+currentY) + rect.x()*kBytesPerPixel;
+                    for(int currentX = 0; currentX < rect.width(); currentX += kUnrollRate) {
+                        b += _565B(buffer,index) + _565B(buffer,index+2) + _565B(buffer,index+4) + _565B(buffer,index+6);
+                        g += _565G(buffer,index) + _565G(buffer,index+2) + _565G(buffer,index+4) + _565G(buffer,index+6);
+                        r += _565R(buffer,index) + _565R(buffer,index+2) + _565R(buffer,index+4) + _565R(buffer,index+6);
+                        count += kUnrollRate;
+                        index += kBytesPerPixel * kUnrollRate;
+                    }
+
+                }
+                break;
+            }
             default:
                 return -1;
                 break;
             }
 
             if ( count > 1 ) {
-                r = ( r / count) & 0xff;
-                g = ( g / count) & 0xff;
-                b = ( b / count) & 0xff;
+                r = int( r / (double)count) & 0xff;
+                g = int( g / (double)count) & 0xff;
+                b = int( b / (double)count) & 0xff;
             }
 
             *result = qRgb(r,g,b);

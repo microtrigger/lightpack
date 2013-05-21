@@ -1,6 +1,6 @@
 #ifndef LOGGER_HPP
 #define LOGGER_HPP
-#include "windows.h"
+//#include "windows.h"
 #include "stdarg.h"
 #include "res/logmessages.h"
 

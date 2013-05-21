@@ -6,7 +6,8 @@ enum BufferFormat {
     BufferFormatBgra,
     BufferFormatRgba,
     BufferFormatAbgr,
-    BufferFormatRgbg
+    BufferFormatRgbg,
+    BufferFormatRgb565
 };
 
 #endif // BUFFERFORMAT_H

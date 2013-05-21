@@ -27,9 +27,9 @@
 
 #pragma once
 
-#include <QtWidgets/QMainWindow>
-#include <QtWidgets/QSystemTrayIcon>
-#include <QtWidgets/QListWidgetItem>
+#include <QMainWindow>
+#include <QSystemTrayIcon>
+#include <QListWidgetItem>
 #include <QLabel>
 #include "Settings.hpp"
 #include "GrabManager.hpp"

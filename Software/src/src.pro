@@ -119,8 +119,6 @@ SOURCES += \
     ColorButton.cpp \
     grab/WinAPIGrabber.cpp \
     LightpackPluginInterface.cpp \
-    ApiServer.cpp \
-    ApiServerSetColorTask.cpp \
     LightpackMath.cpp \
     MoodLampManager.cpp \
     LedDeviceManager.cpp \
@@ -135,6 +133,8 @@ SOURCES += \
     grab/WinAPIGrabberEachWidget.cpp \
     grab/D3D9Grabber.cpp \
     GrabManager.cpp \
+    ApiServer.cpp \
+    ApiServerSetColorTask.cpp \
     AbstractLedDevice.cpp \
     grab/FBGrabber.cpp
 
