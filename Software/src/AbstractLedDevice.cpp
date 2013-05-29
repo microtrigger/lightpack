@@ -82,10 +82,11 @@ void AbstractLedDevice::applyColorModifications(const QList<QRgb> &inColors, QLi
 
     bool isApplyWBAdjustments = m_wbAdjustments.count() == inColors.count();
 
+    double k = 4095/255.0;
+
     for(int i = 0; i < inColors.count(); i++) {
 
         //renormalize to 12bit
-        double k = 4095/255.0;
         outColors[i].r = qRed(inColors[i])   * k;
         outColors[i].g = qGreen(inColors[i]) * k;
         outColors[i].b = qBlue(inColors[i])  * k;

@@ -457,16 +457,16 @@ void GrabManager::initGrabbers()
     for (int i = 0; i < Grab::GrabbersCount; i++)
         m_grabbers.append(NULL);
 
-/*
+
 #ifdef Q_WS_WIN
     m_grabbers[Grab::GrabberTypeWinAPI] = initGrabber(new WinAPIGrabber(NULL, &m_colorsNew, &m_ledWidgets));
     m_grabbers[Grab::GrabberTypeD3D9] = initGrabber(new D3D9Grabber(NULL, &m_colorsNew, &m_ledWidgets));
 #endif
 
 #ifdef Q_WS_X11
-    m_grabbers[Grab::GrabberTypeX11] = initGrabber(new X11Grabber(NULL, &m_colorsNew, &m_ledWidgets));
 #endif
 
+    m_grabbers[Grab::GrabberTypeX11] = initGrabber(new X11Grabber(NULL, &m_colorsNew, &m_ledWidgets));
 #ifdef MAC_OS_CG_GRAB_SUPPORT
     m_grabbers[Grab::GrabberTypeMacCoreGraphics] = initGrabber(new MacOSGrabber(NULL, &m_colorsNew, &m_ledWidgets));
 #endif
@@ -475,7 +475,7 @@ void GrabManager::initGrabbers()
 #ifdef Q_WS_WIN
     m_grabbers[Grab::GrabberTypeWinAPIEachWidget] = initGrabber(new WinAPIGrabberEachWidget(NULL, &m_colorsNew, &m_ledWidgets));
 #endif
-*/
+
 #ifdef FB_GRAB_SUPPORT
     m_grabbers[Grab::GrabberTypeFrameBuffer] = initGrabber(new FBGrabber(NULL, &m_colorsNew, &m_ledWidgets, new FBGrabberDataProvider()));
 #endif

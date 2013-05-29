@@ -29,6 +29,7 @@
 #include <QtDebug>
 #include <QString>
 #include <QRect>
+#include <QRgb>
 // Set and store in main.cpp file
 extern unsigned g_debugLevel;
 
@@ -53,6 +54,12 @@ namespace Debug
                                                               , QString::number(rect.y())
                                                               , QString::number(rect.width())
                                                               , QString::number(rect.height()));
+    }
+
+    inline const QString toString(QRgb rgb) {
+        return QString("R=%1, G=%2, B=%3").arg(QString::number(qRed(rgb))
+                                             , QString::number(qGreen(rgb))
+                                             , QString::number(qBlue(rgb)) );
     }
 }
 

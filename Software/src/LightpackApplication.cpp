@@ -55,7 +55,7 @@ LightpackApplication::LightpackApplication(int &argc, char **argv)
 void LightpackApplication::initializeAll(const QString & appDirPath)
 {
     usb_init();
-    usb_set_debug(2);
+    usb_set_debug(3);
 
 
     setApplicationName("Prismatik");

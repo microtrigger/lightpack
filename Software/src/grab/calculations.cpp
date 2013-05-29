@@ -29,10 +29,10 @@ namespace Grab {
     namespace Calculations {
 
 #define _565R(b,x) (b[x+1] & 0xf8)
-#define _565G(b,x) ((((b[x+1] << 3)&0x38) | ((b[x] >> 5) & 0x07))<<2)
+#define _565G(b,x) ((((b[x+1] << 3) & 0x38) | ((b[x] >> 5) & 0x07)) << 2)
 #define _565B(b,x) ((b[x] & 0x1f) << 3)
 
-        QRgb calculateAvgColor(QRgb *result, unsigned char *buffer, BufferFormat bufferFormat, unsigned int pitch, const QRect &rect ) {
+        int calculateAvgColor(QRgb *result, unsigned char *buffer, BufferFormat bufferFormat, unsigned int pitch, const QRect &rect ) {
 
             Q_ASSERT_X(rect.width() % 4 == 0, "average color calculation", "rect width should be aligned by 4 bytes");
 

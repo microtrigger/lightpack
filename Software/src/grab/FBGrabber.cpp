@@ -33,6 +33,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <math.h>
+#include "calculations.hpp"
 
 #include "debug.h"
 #include <linux/fb.h> /* to handle framebuffer ioctls */
@@ -49,100 +50,44 @@ inline size_t getBufSize(const struct fb_var_screeninfo *fb_info)
     return fb_info->xres * fb_info->yres * getBytesPerPixel(fb_info->bits_per_pixel);
 }
 
-#define _565R(b,x) (b[x+1] & 0xf8)
-#define _565G(b,x) ((((b[x+1] << 3)&0x38) | ((b[x] >> 5) & 0x07))<<2)
-#define _565B(b,x) ((b[x] & 0x1f) << 3)
-
-QRgb getColor(const unsigned char *buf, struct fb_var_screeninfo &fb_info, const QRect &rect)
+QRgb getColor(unsigned char *buf, struct fb_var_screeninfo &fb_info, const QRect &rect)
 {
-
-    DEBUG_HIGH_LEVEL << Q_FUNC_INFO
-                     << "x y w h:" << rect.x() << rect.y() << rect.width() << rect.height();
-    int x = rect.x();
-    int y = rect.y();
-    int width = rect.width();
-    int height = rect.height();
+    DEBUG_HIGH_LEVEL << Q_FUNC_INFO << Debug::toString(rect);
 
     if (buf == NULL)
     {
-        qCritical() << Q_FUNC_INFO << "m_buf == NULL";
+        qCritical() << Q_FUNC_INFO << "buf == NULL";
         return 0;
     }
 
-    // Ignore part of LED widget which out of screen
-    if( x < 0 ) {
-        width += x;  /* reduce width  */
-        x = 0;
+    QRect monitorRect = QRect( QPoint(0,0), QPoint(fb_info.xres-1, fb_info.yres-1));
+
+    QRect clippedRect = monitorRect.intersected(rect);
+
+    // Checking for the 'grabme' widget position inside the monitor that is used to capture color
+    if( !clippedRect.isValid() ){
+
+        DEBUG_MID_LEVEL << "Widget 'grabme' is out of screen:" << Debug::toString(clippedRect);
+        return 0x000000;
     }
-    if( y < 0 ) {
-        height += y;  /* reduce height */
-        y = 0;
-    }
-    unsigned screenWidth = fb_info.xres;
-    unsigned screenHeight = fb_info.yres;
+    // Align width by 4 for accelerated calculations
+    clippedRect.setWidth(clippedRect.width() - (clippedRect.width() % 4));
 
-    if( x + width  > screenWidth  ) width  -= (x + width ) - screenWidth;
-    if( y + height > screenHeight ) height -= (y + height) - screenHeight;
-
-    //calculate aligned width (align by 4 pixels)
-    width = width - (width % 4);
-
-    if(width < 0 || height < 0){
-        qWarning() << Q_FUNC_INFO << "width < 0 || height < 0:" << width << height;
+    if( !clippedRect.isValid() ){
+        qWarning() << Q_FUNC_INFO << " preparedRect is not valid:" << Debug::toString(clippedRect);
 
         // width and height can't be negative
         return 0x000000;
     }
 
-
-    unsigned long count = 0; // count the amount of pixels taken into account
-    const unsigned char bytes_per_pixel = getBytesPerPixel(fb_info.bits_per_pixel);
-    unsigned long r = 0, g = 0, b = 0;
-//    qWarning() << "bbp = " << fb_info.bits_per_pixel << " bytesPerPixel = " << bytes_per_pixel;
-    switch (fb_info.bits_per_pixel) {
-        case 16:
-            for (int k = y; k < y + height; k++) {
-                register unsigned long index = (screenWidth * k + x) * bytes_per_pixel; // index of the selected pixel in pbPixelsBuff
-                for(int i = 0; i < width; i += 4) {
-                    b += _565B(buf,index) + _565B(buf,index+2) + _565B(buf,index+4) + _565B(buf,index+6);
-                    g += _565G(buf,index) + _565G(buf,index+2) + _565G(buf,index+4) + _565G(buf,index+6);
-                    r += _565R(buf,index) + _565R(buf,index+2) + _565R(buf,index+4) + _565R(buf,index+6);
-
-                    count += 4;
-                    index += bytes_per_pixel * 4;
-                }
-            }
-            break;
-
-/*        case 32:
-            for (int k = y; k < y + height; k++) {
-                register unsigned long index = (screenWidth * k + x) * bytes_per_pixel; // index of the selected pixel in pbPixelsBuff
-                for(int i = 0; i < width; i += 4) {
-                    b += buf[index]     + buf[index + 4] + buf[index + 8 ] + buf[index + 12];
-                    g += buf[index + 1] + buf[index + 5] + buf[index + 9 ] + buf[index + 13];
-                    r += buf[index + 2] + buf[index + 6] + buf[index + 10] + buf[index + 14];
-
-                    count+=4;
-                    index += bytes_per_pixel * 4;
-                }
-            }
-            break;
-*/
-        default:
-            qCritical() << "unsupported bitsPerPixel amount: " << fb_info.bits_per_pixel;
+    using namespace Grab;
+    QRgb avgColor;
+    if (Calculations::calculateAvgColor(&avgColor, buf, BufferFormatRgb565, fb_info.yres * getBytesPerPixel(fb_info.bits_per_pixel), clippedRect ) == 0) {
+        DEBUG_HIGH_LEVEL << Q_FUNC_INFO << Debug::toString(avgColor);
+        return avgColor;
+    } else {
+        return qRgb(0,0,0);
     }
-
-    if( count != 0 ){
-        r = (unsigned)round((double) r / count) & 0xff;
-        g = (unsigned)round((double) g / count) & 0xff;
-        b = (unsigned)round((double) b / count) & 0xff;
-    }
-
-    QRgb result = qRgb(r, g, b);
-
-    DEBUG_HIGH_LEVEL << Q_FUNC_INFO << "QRgb result =" << hex << result;
-
-    return result;
 }
 
 FBGrabberDataProvider::FBGrabberDataProvider(const char *deviceFileName) : FBGrabberDataProviderTrait()

@@ -67,7 +67,7 @@ LedDeviceLightpack::~LedDeviceLightpack()
 
 void LedDeviceLightpack::setColors(const QList<QRgb> & colors)
 {
-    DEBUG_MID_LEVEL << Q_FUNC_INFO << hex << (colors.isEmpty() ? -1 : colors.first());
+    DEBUG_MID_LEVEL << Q_FUNC_INFO << colors.size() << hex << (colors.isEmpty() ? -1 : colors.first());
 #if 0
     DEBUG_LOW_LEVEL << Q_FUNC_INFO << "thread id: " << this->thread()->currentThreadId();
 #endif
@@ -97,6 +97,8 @@ void LedDeviceLightpack::setColors(const QList<QRgb> & colors)
     for (int i = 0; i < m_colorsBuffer.count(); i++)
     {
         StructRgb color = m_colorsBuffer[i];
+
+        DEBUG_HIGH_LEVEL << Q_FUNC_INFO << " Sending color: " << hex << color.r << color.g << color.b;
 
         // Send main 8 bits for compability with existing devices
         m_writeBuffer[buffIndex++] = (color.r & 0x0FF0) >> 4;
@@ -372,13 +374,10 @@ bool LedDeviceLightpack::writeBufferToDeviceWithCheck(int command, usb_dev_handl
     {
         if (!writeBufferToDevice(command, phDev))
         {
-            if (!writeBufferToDevice(command, phDev))
-            {
-                if (tryToReopenDevice())
-                    return writeBufferToDevice(command, phDev);
-                else
-                    return false;
-            }
+            if (tryToReopenDevice())
+                return writeBufferToDevice(command, phDev);
+            else
+                return false;
         }
         return true;
     } else {
